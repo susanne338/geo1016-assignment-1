@@ -76,7 +76,7 @@ bool Calibration::calibration(
     // check here: https://en.cppreference.com/w/cpp/container/vector
     std::vector<double> array = {1, 3, 3, 4, 7, 6, 2, 8, 2, 8, 3, 2, 4, 9, 1, 7, 3, 23, 2, 3, 5, 2, 1, 5, 8, 9, 22};
     array.push_back(5); // append 5 to the array (so the size will increase by 1).
-    array.insert(array.end(), 10, 3);  // append ten 3s (so the size will grow by 10).
+    array.insert(array.end(), 10, 3);  // append ten 3 (so the size will grow by 10).
 
     /// To access the value of an element.
     double a = array[2];
@@ -205,19 +205,27 @@ bool Calibration::calibration(
                  "\tIMPORTANT: don't forget to write your recovered parameters to the above variables." << std::endl;
 
     // TODO: check if input is valid (e.g., number of correspondences >= 6, sizes of 2D/3D points must match)
+    if (points_3d.size() != points_2d.size()) {
+        std::cout << "Input invalid" << std::endl;
+        return false;
+    }
 
     // TODO: construct the P matrix (so P * m = 0).
     int size = points_3d.size();
     int nr_rows = points_2d.size() * 2;
+    std::cout<< "number of points " << size <<std::endl;
     Matrix P_matrix(nr_rows, 12, 0.0);
-    for (int i = 0; i < points_3d.size(); i++){
-        Vector3D p3d = points_3d[i];
-        Vector2D p2d = points_2d[i];
+    int ii = 0;
+    for (int i = 0; i < 2 * points_3d.size(); i = i+2){
+        Vector3D p3d = points_3d[ii];
+        Vector2D p2d = points_2d[ii];
         Vector3D p3dm1 = p2d[0] * p3d;
         Vector3D p3dm2 = p2d[1] * p3d;
         P_matrix.set_row(i, {p3d[0], p3d[1], p3d[2], 1, 0, 0, 0, 0, -p3dm1[0], -p3dm1[1], -p3dm1[2], -p2d[0]});
         P_matrix.set_row(i + 1, {0, 0, 0, 0, p3d[0], p3d[1], p3d[2], 1, -p3dm2[0], -p3dm2[1], -p3dm2[2], -p2d[1]});
+        ii++;
     }
+    std::cout << "P matrix: \n" << P_matrix << std::endl;
 
     // TODO: solve for M (the whole projection matrix, i.e., M = K * [R, t]) using SVD decomposition.
     //   Optional: you can check if your M is correct by applying M on the 3D points. If correct, the projected point
@@ -227,12 +235,29 @@ bool Calibration::calibration(
     Matrix V_matrix(12, 12, 0.0);   // initialized with 0s
     svd_decompose(P_matrix, U_matrix, S_matrix, V_matrix);
 
-    Vector m_vec = V_matrix.get_column(W.cols() - 1);
+    // check the decomposition (CHECKED! all good)
+    // Check 1: U is orthogonal, so U * U^T must be identity
+    std::cout << "U*U^T: \n" << U_matrix * transpose(U_matrix) << std::endl;
+
+    // Check 2: V is orthogonal, so V * V^T must be identity
+//    std::cout << "V*V^T: \n" << V_matrix * transpose(V_matrix) << std::endl;
+
+    // Check 3: S must be a diagonal matrix
+//    std::cout << "S: \n" << S_matrix << std::endl;
+
+    // Check 4: according to the definition, A = U * S * V^T
+    std::cout << "M - U * S * V^T: \n" << A - U * S * transpose(V) << std::endl;
+//    std::cout << "v matrix: \n" << V_matrix << std::endl;
+
+    Vector m_vec = V_matrix.get_column(V_matrix.cols() - 1);
     //reformat vector m into matrix M
+
     Matrix M_matrix(3, 4, 0.0);
     M_matrix.set_row(0, {m_vec[0], m_vec[1], m_vec[2], m_vec[3]});
     M_matrix.set_row(1, {m_vec[4], m_vec[5], m_vec[6], m_vec[7]});
     M_matrix.set_row(2, {m_vec[8], m_vec[9], m_vec[10], m_vec[11]});
+
+    std::cout << "M matrix: \n" << M_matrix << std::endl;
 
     Vector3D a1 = {m_vec[0], m_vec[1], m_vec[2]};
     Vector3D a2 = {m_vec[4], m_vec[5], m_vec[6]};
@@ -240,25 +265,71 @@ bool Calibration::calibration(
     double b1 = m_vec[3];
     double b2 = m_vec[7];
     double b3 = m_vec[11];
+    Matrix b_matrix(3, 1, 0.0);
+    b_matrix.set_column(0, {b1, b2, b3});
 
     // TODO: extract intrinsic parameters from M.
+    // "code must explicitly handle the sign of rho"
     //im not sure about the norm || || and what exactly it means in these cases. Is it normalize?
+    /* puti: there is also ".norm()" function besides .normalize()
+     * difference:
+     * -> .normalize(): -0.569661 0.737767 -0.362197
+     * -> .norm(): 8.88922e-06
+     * norm function: (from vector.h)
+     * which one should we use?
+     */
+
     double rho1 = 1 / (sqrt(pow(a1[0], 2) + pow(a2[0], 2) + pow(a3[0], 2)));
     double rho2 = - 1 / (sqrt(pow(a1[0], 2) + pow(a2[0], 2) + pow(a3[0], 2)));
+
+    // puti: did you mean cx and cy? (as written on the lecture notes)
     double u0 = pow(rho1,2) * (dot(a1, a3));
     double v0 = pow(rho1,2) * (dot(a2, a3));
     double cos_theta = - (dot(cross(a1, a3), cross(a2, a3)) ) / dot((cross(a1, a3)).normalize(), (cross(a2, a3)).normalize());
 //    double alpha = pow(rho1, 2) *
+    // get theta
+    double theta = acos(cos_theta);
+    std::cout << " teta: " << theta << std::endl;
+    double alpha = pow(rho1, 2) * norm(cross(a1, a3)) * sin(theta);
+    double beta = pow(rho1, 2) * norm(cross(a2, a3)) * sin(theta);
+    double cot_theta = cos(theta) / sin(theta);
+
+    // print difference between normalize function:
+    std::cout << ".normalize(): " << cross(a1, a3).normalize()<< std::endl;
+    std::cout << ".norm(): " << cross(a1, a3).norm() << std::endl;
 
     // TODO: extract extrinsic parameters from M.
-    Vector3D r1 = cross(a2, a3) / (cross(a2, a3)).normalize();
+    auto jj = cross(a2, a3);
+    auto jk = cross(a2, a3).normalize();
+    auto jl = cross(a2, a3).norm();
+
+    Vector3D r1 = cross(a2, a3) / cross(a2, a3).norm();
     Vector3D r3 = rho1 * a3;
     Vector3D r2 = cross(r3, r1);
+    Matrix K_matrix(3, 3, 0.0);
+
+    K_matrix.set_row(0, {alpha, (-alpha * cot_theta), u0});
+    K_matrix.set_row(1, {0, (beta/sin(theta)), v0});
+    K_matrix.set_row(2, {0, 0, 1});
+    Matrix t_matrix = rho1 * inverse(K_matrix) * b_matrix;
+    t[0] = t_matrix(0, 0);
+    t[1] = t_matrix(1, 0);
+    t[2] = t_matrix(2, 0);
+    std::cout << "t result: \n" << t << std::endl;
+    R.set_row(0, r1);
+    R.set_row(1, r2);
+    R.set_row(2, r3);
+    std::cout << "R result: \n" << R << std::endl;
+    fx = K_matrix(0,0);
+    fy = K_matrix(1,1);
+    cx = K_matrix(0, 2);
+    cy = K_matrix(1, 2);
+    skew = K_matrix(0,1);
 
     std::cout << "\n\tTODO: After you implement this function, please return 'true' - this will trigger the viewer to\n"
                  "\t\tupdate the rendering using your recovered camera parameters. This can help you to visually check\n"
                  "\t\tif your calibration is successful or not.\n\n" << std::flush;
-    return false;
+    return true;
 }
 
 
