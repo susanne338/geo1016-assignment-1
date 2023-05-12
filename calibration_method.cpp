@@ -74,116 +74,116 @@ bool Calibration::calibration(
     // length. With 'std::vector', you can append/delete/insert elements, and much more. The 'std::vector' can store
     // not only 'double', but also any other types of objects. In case you may want to learn more about 'std::vector'
     // check here: https://en.cppreference.com/w/cpp/container/vector
-//    std::vector<double> array = {1, 3, 3, 4, 7, 6, 2, 8, 2, 8, 3, 2, 4, 9, 1, 7, 3, 23, 2, 3, 5, 2, 1, 5, 8, 9, 22};
-//    array.push_back(5); // append 5 to the array (so the size will increase by 1).
-//    array.insert(array.end(), 10, 3);  // append ten 3 (so the size will grow by 10).
-//
-//    /// To access the value of an element.
-//    double a = array[2];
-//
-//    /// define a 2D vector/point
-//    Vector2D b(1.1, 2.2);
-//
-//    /// define a 3D vector/point
-//    Vector3D c(1.1, 2.2, 3.3);
-//
-//    /// get the Cartesian coordinates of a (a is treated as Homogeneous coordinates)
-//    Vector2D p = c.cartesian();
-//
-//    /// get the Homogeneous coordinates of p
-//    Vector3D q = p.homogeneous();
-//
-//    /// the length of a vector
-//    double len = p.length();
-//    /// the squared length of a vector
-//    double sqr_len = p.length2();
-//
-//    /// the dot product of two vectors
-//    double dot_prod = dot(p, q);
-//
-//    /// the cross product of two vectors
-//    Vector cross_prod = cross(c, q);
-//
-//    /// normalize this vector
-//    cross_prod.normalize();
-//
-//    // Define an m-by-n double valued matrix.
-//    // Here I use the above array to initialize it. You can also use A(i, j) to initialize/modify/access its elements.
-//    const int m = 6, n = 5;
-//    Matrix A(m, n, array.data());    // 'array.data()' returns a pointer to the array.
-////    std::cout << "M: \n" << A << std::endl;
-//
-//    /// define a 3 by 4 matrix (and all elements initialized to 0.0)
-//    Matrix M(3, 4, 0.0);
-//
-//    /// set first row by a vector
-//    M.set_row(0, Vector4D(1.1, 2.2, 3.3, 4.4));
-//
-//    /// set second column by a vector
-//    M.set_column(1, Vector3D(5.5, 5.5, 5.5));
-//
-//    /// define a 3 by 3 matrix (and all elements initialized to 0.0)
-//    Matrix33 B;
-//
-//    /// define and initialize a 3 by 3 matrix
-//    Matrix33 T(1.1, 2.2, 3.3,
-//               0, 2.2, 3.3,
-//               0, 0, 1);
-//
-//    /// define and initialize a 3 by 4 matrix
-//    Matrix34 P(1.1, 2.2, 3.3, 0,
-//               0, 2.2, 3.3, 1,
-//               0, 0, 1, 1);
-//
-//    /// define a 15 by 9 matrix (and all elements initialized to 0.0)
-//    Matrix W(15, 9, 0.0);
-//    /// set the first row by a 9-dimensional vector
-//    W.set_row(0, {0, 1, 2, 3, 4, 5, 6, 7, 8}); // {....} is equivalent to a std::vector<double>
-//
-//    /// get the number of rows.
-//    int num_rows = W.rows();
-//
-//    /// get the number of columns.
-//    int num_cols = W.cols();
-//
-//    /// get the the element at row 1 and column 2
-//    double value = W(1, 2);
-//
-//    /// get the last column of a matrix
-//    Vector last_column = W.get_column(W.cols() - 1);
-//
-//    /// define a 3 by 3 identity matrix
-//    Matrix33 I = Matrix::identity(3, 3, 1.0);
-//
-//    /// matrix-vector product
-//    Vector3D v = M * Vector4D(1, 2, 3, 4); // M is 3 by 4
-//
-//    Matrix U(m, m, 0.0);   // initialized with 0s
-//    Matrix S(m, n, 0.0);   // initialized with 0s
-//    Matrix V(n, n, 0.0);   // initialized with 0s
-//
-//    // Compute the SVD decomposition of A
-//    svd_decompose(A, U, S, V);
-//
-//    // Now let's check if the SVD result is correct
-//
-//    // Check 1: U is orthogonal, so U * U^T must be identity
-////    std::cout << "U*U^T: \n" << U * transpose(U) << std::endl;
-//
-//    // Check 2: V is orthogonal, so V * V^T must be identity
-////    std::cout << "V*V^T: \n" << V * transpose(V) << std::endl;
-//
-//    // Check 3: S must be a diagonal matrix
-////    std::cout << "S: \n" << S << std::endl;
-//
-//    // Check 4: according to the definition, A = U * S * V^T
-////    std::cout << "M - U * S * V^T: \n" << A - U * S * transpose(V) << std::endl;
-//
-//    // Compute the inverse of a matrix
-//    Matrix invT;
-//    inverse(T, invT);
-//    // Let's check if the inverse is correct
-////    std::cout << "B * invB: \n" << B * invB << std::endl;
+    std::vector<double> array = {1, 3, 3, 4, 7, 6, 2, 8, 2, 8, 3, 2, 4, 9, 1, 7, 3, 23, 2, 3, 5, 2, 1, 5, 8, 9, 22};
+    array.push_back(5); // append 5 to the array (so the size will increase by 1).
+    array.insert(array.end(), 10, 3);  // append ten 3 (so the size will grow by 10).
+
+    /// To access the value of an element.
+    double a = array[2];
+
+    /// define a 2D vector/point
+    Vector2D b(1.1, 2.2);
+
+    /// define a 3D vector/point
+    Vector3D c(1.1, 2.2, 3.3);
+
+    /// get the Cartesian coordinates of a (a is treated as Homogeneous coordinates)
+    Vector2D p = c.cartesian();
+
+    /// get the Homogeneous coordinates of p
+    Vector3D q = p.homogeneous();
+
+    /// the length of a vector
+    double len = p.length();
+    /// the squared length of a vector
+    double sqr_len = p.length2();
+
+    /// the dot product of two vectors
+    double dot_prod = dot(p, q);
+
+    /// the cross product of two vectors
+    Vector cross_prod = cross(c, q);
+
+    /// normalize this vector
+    cross_prod.normalize();
+
+    // Define an m-by-n double valued matrix.
+    // Here I use the above array to initialize it. You can also use A(i, j) to initialize/modify/access its elements.
+    const int m = 6, n = 5;
+    Matrix A(m, n, array.data());    // 'array.data()' returns a pointer to the array.
+//    std::cout << "M: \n" << A << std::endl;
+
+    /// define a 3 by 4 matrix (and all elements initialized to 0.0)
+    Matrix M(3, 4, 0.0);
+
+    /// set first row by a vector
+    M.set_row(0, Vector4D(1.1, 2.2, 3.3, 4.4));
+
+    /// set second column by a vector
+    M.set_column(1, Vector3D(5.5, 5.5, 5.5));
+
+    /// define a 3 by 3 matrix (and all elements initialized to 0.0)
+    Matrix33 B;
+
+    /// define and initialize a 3 by 3 matrix
+    Matrix33 T(1.1, 2.2, 3.3,
+               0, 2.2, 3.3,
+               0, 0, 1);
+
+    /// define and initialize a 3 by 4 matrix
+    Matrix34 P(1.1, 2.2, 3.3, 0,
+               0, 2.2, 3.3, 1,
+               0, 0, 1, 1);
+
+    /// define a 15 by 9 matrix (and all elements initialized to 0.0)
+    Matrix W(15, 9, 0.0);
+    /// set the first row by a 9-dimensional vector
+    W.set_row(0, {0, 1, 2, 3, 4, 5, 6, 7, 8}); // {....} is equivalent to a std::vector<double>
+
+    /// get the number of rows.
+    int num_rows = W.rows();
+
+    /// get the number of columns.
+    int num_cols = W.cols();
+
+    /// get the the element at row 1 and column 2
+    double value = W(1, 2);
+
+    /// get the last column of a matrix
+    Vector last_column = W.get_column(W.cols() - 1);
+
+    /// define a 3 by 3 identity matrix
+    Matrix33 I = Matrix::identity(3, 3, 1.0);
+
+    /// matrix-vector product
+    Vector3D v = M * Vector4D(1, 2, 3, 4); // M is 3 by 4
+
+    Matrix U(m, m, 0.0);   // initialized with 0s
+    Matrix S(m, n, 0.0);   // initialized with 0s
+    Matrix V(n, n, 0.0);   // initialized with 0s
+
+    // Compute the SVD decomposition of A
+    svd_decompose(A, U, S, V);
+
+    // Now let's check if the SVD result is correct
+
+    // Check 1: U is orthogonal, so U * U^T must be identity
+//    std::cout << "U*U^T: \n" << U * transpose(U) << std::endl;
+
+    // Check 2: V is orthogonal, so V * V^T must be identity
+//    std::cout << "V*V^T: \n" << V * transpose(V) << std::endl;
+
+    // Check 3: S must be a diagonal matrix
+//    std::cout << "S: \n" << S << std::endl;
+
+    // Check 4: according to the definition, A = U * S * V^T
+//    std::cout << "M - U * S * V^T: \n" << A - U * S * transpose(V) << std::endl;
+
+    // Compute the inverse of a matrix
+    Matrix invT;
+    inverse(T, invT);
+    // Let's check if the inverse is correct
+//    std::cout << "B * invB: \n" << B * invB << std::endl;
 
     // TODO: the above code just demonstrates some useful data structures and APIs. Please remove all above code in your
     //       final submission.
@@ -216,7 +216,7 @@ bool Calibration::calibration(
     std::cout<< "number of points " << size <<std::endl;
     Matrix P_matrix(nr_rows, 12, 0.0);
     int ii = 0;
-    for (int i = 0; i < 2 * points_3d.size(); i = i+2){
+    for (int i = 0; i < 2 * points_3d.size(); i = i + 2){
         Vector3D p3d = points_3d[ii];
         Vector2D p2d = points_2d[ii];
         Vector3D p3dm1 = p2d[0] * p3d;
@@ -240,16 +240,18 @@ bool Calibration::calibration(
     std::cout << "U*U^T: \n" << U_matrix * transpose(U_matrix) << std::endl;
 
     // Check 2: V is orthogonal, so V * V^T must be identity
-//    std::cout << "V*V^T: \n" << V_matrix * transpose(V_matrix) << std::endl;
+    std::cout << "V*V^T: \n" << V_matrix * transpose(V_matrix) << std::endl;
 
     // Check 3: S must be a diagonal matrix
-//    std::cout << "S: \n" << S_matrix << std::endl;
+    std::cout << "S: \n" << S_matrix << std::endl;
 
     // Check 4: according to the definition, A = U * S * V^T
-    std::cout << "M - U * S * V^T: \n" << P_matrix - U_matrix * S_matrix * transpose(V_matrix) << std::endl;
-//    std::cout << "v matrix: \n" << V_matrix << std::endl;
+    std::cout << "M - U * S * V^T: \n" << A - U * S * transpose(V) << std::endl;
+
+
 
     Vector m_vec = V_matrix.get_column(V_matrix.cols() - 1);
+    std::cout << " m vec: \n" << m_vec <<std::endl;
     //reformat vector m into matrix M
 
     Matrix M_matrix(3, 4, 0.0);
@@ -267,6 +269,7 @@ bool Calibration::calibration(
     double b3 = m_vec[11];
     Matrix b_matrix(3, 1, 0.0);
     b_matrix.set_column(0, {b1, b2, b3});
+    std::cout << "b matrix: \n" << b_matrix << std::endl;
 
     // TODO: extract intrinsic parameters from M.
     // "code must explicitly handle the sign of rho"
@@ -279,20 +282,26 @@ bool Calibration::calibration(
      * which one should we use?
      */
 
-    double rho1 = 1 / a3.norm();
-    double rho2 = - 1 / a3.norm();
+    double rho1 = 1 / a3.norm(); //sqrt(pow(a1[0], 2) + pow(a2[0], 2) + pow(a3[0], 2)));
+    double rho2 = - 1 / a3.norm(); //(sqrt(pow(a1[0], 2) + pow(a2[0], 2) + pow(a3[0], 2)));
+    std::cout << "rho1 \n" << rho1 << std::endl;
+    std::cout << "rho2 \n" << rho2 << std::endl;
+    std::cout << "rho1 * M matrix: \n" << rho1 * M_matrix << std::endl;
+    std::cout << "rho2 * M matrix: \n" << rho2 * M_matrix << std::endl;
 
-    // puti: did you mean cx and cy? (as written on the lecture notes)
     double u0 = pow(rho1,2) * (dot(a1, a3));
+    std::cout << "u0 \n" << u0 << std::endl;
     double v0 = pow(rho1,2) * (dot(a2, a3));
+    std::cout << "v0 \n" << v0 << std::endl;
     double cos_theta = - (dot(cross(a1, a3), cross(a2, a3)) ) / dot((cross(a1, a3)).normalize(), (cross(a2, a3)).normalize());
 //    double alpha = pow(rho1, 2) *
     // get theta
     double theta = acos(cos_theta);
-    std::cout << " teta: " << theta << std::endl;
+    std::cout << " theta: " << theta << std::endl;
     double alpha = pow(rho1, 2) * norm(cross(a1, a3)) * sin(theta);
     double beta = pow(rho1, 2) * norm(cross(a2, a3)) * sin(theta);
     double cot_theta = cos(theta) / sin(theta);
+    std::cout << "cot theta : \n" << cot_theta << std::endl;
 
     // print difference between normalize function:
     std::cout << ".normalize(): " << cross(a1, a3).normalize()<< std::endl;
@@ -311,10 +320,12 @@ bool Calibration::calibration(
     K_matrix.set_row(0, {alpha, (-alpha * cot_theta), u0});
     K_matrix.set_row(1, {0, (beta/sin(theta)), v0});
     K_matrix.set_row(2, {0, 0, 1});
-    Matrix Kinv;
-    inverse(K_matrix, Kinv);
-    Matrix t_matrix = rho1 * Kinv * b_matrix;
-//    std::cout << "B * invB: \n" << K_matrix * Kinv << std::endl;
+    std::cout << "k matrix: \n" << K_matrix << std::endl;
+
+    Matrix kinv;
+    inverse(K_matrix, kinv);
+    Matrix t_matrix = rho1 * kinv* b_matrix;
+    std::cout << "t matrix: \n" << t_matrix << std::endl;
     t[0] = t_matrix(0, 0);
     t[1] = t_matrix(1, 0);
     t[2] = t_matrix(2, 0);
@@ -323,6 +334,7 @@ bool Calibration::calibration(
     R.set_row(1, r2);
     R.set_row(2, r3);
     std::cout << "R result: \n" << R << std::endl;
+
     fx = K_matrix(0,0);
     fy = K_matrix(1,1);
     cx = K_matrix(0, 2);
@@ -334,7 +346,6 @@ bool Calibration::calibration(
                  "\t\tif your calibration is successful or not.\n\n" << std::flush;
     return true;
 }
-
 
 
 
