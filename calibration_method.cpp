@@ -209,11 +209,14 @@ bool Calibration::calibration(
         std::cout << "Input invalid" << std::endl;
         return false;
     }
+//    if (points_3d.size() < 6){
+//        std::cout << " Not enough points!" << std::endl;
+//        return false;
+//    }
 
     // TODO: construct the P matrix (so P * m = 0).
     int size = points_3d.size();
     int nr_rows = points_2d.size() * 2;
-    std::cout<< "number of points " << size <<std::endl;
     Matrix P_matrix(nr_rows, 12, 0.0);
     int ii = 0;
     for (int i = 0; i < 2 * points_3d.size(); i = i + 2){
@@ -237,30 +240,30 @@ bool Calibration::calibration(
 
     // check the decomposition (CHECKED! all good)
     // Check 1: U is orthogonal, so U * U^T must be identity
-    std::cout << "U*U^T: \n" << U_matrix * transpose(U_matrix) << std::endl;
+    std::cout << "U*U^T: should give the identity matrix \n" << U_matrix * transpose(U_matrix) << std::endl;
 
     // Check 2: V is orthogonal, so V * V^T must be identity
-    std::cout << "V*V^T: \n" << V_matrix * transpose(V_matrix) << std::endl;
+    std::cout << "V*V^T: should give the identity matrix \n" << V_matrix * transpose(V_matrix) << std::endl;
 
     // Check 3: S must be a diagonal matrix
-    std::cout << "S: \n" << S_matrix << std::endl;
+    std::cout << "S: must be diagonal \n" << S_matrix << std::endl;
 
     // Check 4: according to the definition, A = U * S * V^T
-    std::cout << "M - U * S * V^T: \n" << A - U * S * transpose(V) << std::endl;
+    std::cout << "M - U * S * V^T: should return zeroes\n" << A - U * S * transpose(V) << std::endl;
 
 
-
+    //m_vec is equal to the last column of V
     Vector m_vec = V_matrix.get_column(V_matrix.cols() - 1);
-    std::cout << " m vec: \n" << m_vec <<std::endl;
-    //reformat vector m into matrix M
+    std::cout << " m vector: \n" << m_vec <<std::endl;
 
+    //reformat vector m into matrix M
     Matrix M_matrix(3, 4, 0.0);
     M_matrix.set_row(0, {m_vec[0], m_vec[1], m_vec[2], m_vec[3]});
     M_matrix.set_row(1, {m_vec[4], m_vec[5], m_vec[6], m_vec[7]});
     M_matrix.set_row(2, {m_vec[8], m_vec[9], m_vec[10], m_vec[11]});
-
     std::cout << "M matrix: \n" << M_matrix << std::endl;
 
+    //define a and b from M
     Vector3D a1 = {m_vec[0], m_vec[1], m_vec[2]};
     Vector3D a2 = {m_vec[4], m_vec[5], m_vec[6]};
     Vector3D a3 = {m_vec[8], m_vec[9], m_vec[10]};
@@ -282,30 +285,31 @@ bool Calibration::calibration(
      * which one should we use?
      */
 
-    double rho1 = 1 / a3.norm(); //sqrt(pow(a1[0], 2) + pow(a2[0], 2) + pow(a3[0], 2)));
-    double rho2 = - 1 / a3.norm(); //(sqrt(pow(a1[0], 2) + pow(a2[0], 2) + pow(a3[0], 2)));
-    std::cout << "rho1 \n" << rho1 << std::endl;
-    std::cout << "rho2 \n" << rho2 << std::endl;
-    std::cout << "rho1 * M matrix: \n" << rho1 * M_matrix << std::endl;
-    std::cout << "rho2 * M matrix: \n" << rho2 * M_matrix << std::endl;
+    double rho1 = 1 / a3.norm();
+    double rho2 = - 1 / a3.norm();
+    std::cout << "+ rho  \n" << rho1 << std::endl;
+    std::cout << "- rho \n" << rho2 << std::endl;
 
     double u0 = pow(rho1,2) * (dot(a1, a3));
-    std::cout << "u0 \n" << u0 << std::endl;
+    std::cout << "u_0 \n" << u0 << std::endl;
     double v0 = pow(rho1,2) * (dot(a2, a3));
-    std::cout << "v0 \n" << v0 << std::endl;
+    std::cout << "v_0 \n" << v0 << std::endl;
     double cos_theta = - (dot(cross(a1, a3), cross(a2, a3)) ) / dot((cross(a1, a3)).normalize(), (cross(a2, a3)).normalize());
-//    double alpha = pow(rho1, 2) *
+    std::cout << "cos theta \n" << cos_theta<< std::endl;
+
     // get theta
     double theta = acos(cos_theta);
     std::cout << " theta: " << theta << std::endl;
+
     double alpha = pow(rho1, 2) * norm(cross(a1, a3)) * sin(theta);
     double beta = pow(rho1, 2) * norm(cross(a2, a3)) * sin(theta);
+    std::cout << "alpha beta \n" << alpha << beta << std::endl;
     double cot_theta = cos(theta) / sin(theta);
     std::cout << "cot theta : \n" << cot_theta << std::endl;
 
     // print difference between normalize function:
-    std::cout << ".normalize(): " << cross(a1, a3).normalize()<< std::endl;
-    std::cout << ".norm(): " << cross(a1, a3).norm() << std::endl;
+//    std::cout << ".normalize(): " << cross(a1, a3).normalize()<< std::endl;
+//    std::cout << ".norm(): " << cross(a1, a3).norm() << std::endl;
 
     // TODO: extract extrinsic parameters from M.
     auto jj = cross(a2, a3);
@@ -322,6 +326,7 @@ bool Calibration::calibration(
     K_matrix.set_row(2, {0, 0, 1});
     std::cout << "k matrix: \n" << K_matrix << std::endl;
 
+    //compute t
     Matrix kinv;
     inverse(K_matrix, kinv);
     Matrix t_matrix = rho1 * kinv* b_matrix;
@@ -330,6 +335,8 @@ bool Calibration::calibration(
     t[1] = t_matrix(1, 0);
     t[2] = t_matrix(2, 0);
     std::cout << "t result: \n" << t << std::endl;
+
+    //compute R
     R.set_row(0, r1);
     R.set_row(1, r2);
     R.set_row(2, r3);
