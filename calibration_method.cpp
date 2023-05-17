@@ -68,11 +68,6 @@ bool Calibration::calibration(
                  "\t    - do NOT include the 'build' directory (which contains the intermediate files in a build step).\n"
                  "\t    - make sure your code compiles and can reproduce your results without ANY modification.\n\n" << std::flush;
 
-    /// Below are a few examples showing some useful data structures and functions.
-    
-    //--------------------------------------------------------------------------------------------------------------
-    // implementation starts ...
-
     std::cout << "\n[Liangliang]:\n"
                  "\tThe input parameters of this function are:\n"
                  "\t\t- points_3d: An array of 3D points (input to this function)\n"
@@ -99,9 +94,10 @@ bool Calibration::calibration(
     // TODO: construct the P matrix (so P * m = 0).
     int size = points_3d.size();
     int nr_rows = points_2d.size() * 2;
+    std::cout<< "number of points " << size <<std::endl;
     Matrix P_matrix(nr_rows, 12, 0.0);
     int ii = 0;
-    for (int i = 0; i < 2 * points_3d.size(); i = i + 2){
+    for (int i = 0; i < 2 * points_3d.size(); i = i+2){
         Vector3D p3d = points_3d[ii];
         Vector2D p2d = points_2d[ii];
         Vector3D p3dm1 = p2d[0] * p3d;
@@ -122,30 +118,28 @@ bool Calibration::calibration(
 
     // check the decomposition (CHECKED! all good)
     // Check 1: U is orthogonal, so U * U^T must be identity
-    std::cout << "U*U^T: should give the identity matrix \n" << U_matrix * transpose(U_matrix) << std::endl;
+//    std::cout << "U*U^T: \n" << U_matrix * transpose(U_matrix) << std::endl;
 
     // Check 2: V is orthogonal, so V * V^T must be identity
-    std::cout << "V*V^T: should give the identity matrix \n" << V_matrix * transpose(V_matrix) << std::endl;
+//    std::cout << "V*V^T: \n" << V_matrix * transpose(V_matrix) << std::endl;
 
     // Check 3: S must be a diagonal matrix
-    std::cout << "S: must be diagonal \n" << S_matrix << std::endl;
+//    std::cout << "S: \n" << S_matrix << std::endl;
 
     // Check 4: according to the definition, A = U * S * V^T
-    std::cout << "M - U * S * V^T: should return zeroes\n" << A - U * S * transpose(V) << std::endl;
+//    std::cout << "M - U * S * V^T: \n" << P_matrix - U_matrix * S_matrix * transpose(V_matrix) << std::endl;
 
-
-    //m_vec is equal to the last column of V
+    // m_vec is equal to the last column of V
     Vector m_vec = V_matrix.get_column(V_matrix.cols() - 1);
-    std::cout << " m vector: \n" << m_vec <<std::endl;
 
     //reformat vector m into matrix M
     Matrix M_matrix(3, 4, 0.0);
     M_matrix.set_row(0, {m_vec[0], m_vec[1], m_vec[2], m_vec[3]});
     M_matrix.set_row(1, {m_vec[4], m_vec[5], m_vec[6], m_vec[7]});
     M_matrix.set_row(2, {m_vec[8], m_vec[9], m_vec[10], m_vec[11]});
+
     std::cout << "M matrix: \n" << M_matrix << std::endl;
 
-    //define a and b from M
     Vector3D a1 = {m_vec[0], m_vec[1], m_vec[2]};
     Vector3D a2 = {m_vec[4], m_vec[5], m_vec[6]};
     Vector3D a3 = {m_vec[8], m_vec[9], m_vec[10]};
@@ -154,7 +148,6 @@ bool Calibration::calibration(
     double b3 = m_vec[11];
     Matrix b_matrix(3, 1, 0.0);
     b_matrix.set_column(0, {b1, b2, b3});
-    std::cout << "b matrix: \n" << b_matrix << std::endl;
 
     // TODO: extract intrinsic parameters from M.
     double rho1 = 1 / a3.norm();
@@ -166,48 +159,64 @@ bool Calibration::calibration(
     std::cout << "u_0 \n" << u0 << std::endl;
     double v0 = pow(rho1,2) * (dot(a2, a3));
     std::cout << "v_0 \n" << v0 << std::endl;
-    double cos_theta = - (dot(cross(a1, a3), cross(a2, a3)) ) / dot((cross(a1, a3)).normalize(), (cross(a2, a3)).normalize());
+
+    double cos_theta = - (dot(cross(a1, a3), cross(a2, a3)) ) / ((cross(a1, a3)).length() * (cross(a2, a3)).length());
     std::cout << "cos theta \n" << cos_theta<< std::endl;
+
+//    previous calculation of cos_theta before feedback:
+//    double cos_theta2 = - (dot(cross(a1, a3), cross(a2, a3)) ) / dot((cross(a1, a3)).normalize(), (cross(a2, a3)).normalize());
+//    std::cout << "old cost theta: " << cos_theta2 << std::endl;
 
     // get theta
     double theta = acos(cos_theta);
-    std::cout << " theta: " << theta << std::endl;
-
+    std::cout << "teta: " << theta << std::endl;
     double alpha = pow(rho1, 2) * norm(cross(a1, a3)) * sin(theta);
     double beta = pow(rho1, 2) * norm(cross(a2, a3)) * sin(theta);
-    std::cout << "alpha beta \n" << alpha << beta << std::endl;
+    std::cout << "alpha: " << alpha << "\nbeta: " << beta << std::endl;
     double cot_theta = cos(theta) / sin(theta);
-    std::cout << "cot theta : \n" << cot_theta << std::endl;
-
+    std::cout << "cot theta: \n" << cot_theta << std::endl;
 
     // TODO: extract extrinsic parameters from M.
 
-    Vector3D r1 = cross(a2, a3) / cross(a2, a3).norm();
-    Vector3D r3 = rho1 * a3;
-    Vector3D r2 = cross(r3, r1);
+    Vector3D r1, r2, r3;
     Matrix K_matrix(3, 3, 0.0);
-
     K_matrix.set_row(0, {alpha, (-alpha * cot_theta), u0});
     K_matrix.set_row(1, {0, (beta/sin(theta)), v0});
     K_matrix.set_row(2, {0, 0, 1});
-    std::cout << "k matrix: \n" << K_matrix << std::endl;
+    Matrix Kinv;
+    inverse(K_matrix, Kinv);
 
-    //compute t
-    Matrix kinv;
-    inverse(K_matrix, kinv);
-    Matrix t_matrix = rho1 * kinv* b_matrix;
-    std::cout << "t matrix: \n" << t_matrix << std::endl;
-    t[0] = t_matrix(0, 0);
-    t[1] = t_matrix(1, 0);
-    t[2] = t_matrix(2, 0);
+    Matrix t_matrix = rho1 * Kinv * b_matrix;
+
+    // select which rho to use, condition to make sure if tz is positive
+    // compute t and R
+    if (t_matrix(2, 0) < 0) {
+        r1 = cross(a2, a3) / cross(a2, a3).norm();
+        r3 = rho2 * a3;
+        r2 = cross(r3, r1);
+        Matrix t_matrix_1 = rho2 * Kinv * b_matrix;
+        t[0] = t_matrix_1(0, 0);
+        t[1] = t_matrix_1(1, 0);
+        t[2] = t_matrix_1(2, 0);
+        std::cout << "selected rho value: " << rho2 << std::endl;
+    }
+    else {
+        r1 = cross(a2, a3) / cross(a2, a3).norm();
+        r3 = rho1 * a3;
+        r2 = cross(r3, r1);
+        t[0] = t_matrix(0, 0);
+        t[1] = t_matrix(1, 0);
+        t[2] = t_matrix(2, 0);
+        std::cout << "selected rho value: " << rho1 << std::endl;
+    }
+
     std::cout << "t result: \n" << t << std::endl;
-
-    //compute R
     R.set_row(0, r1);
     R.set_row(1, r2);
     R.set_row(2, r3);
     std::cout << "R result: \n" << R << std::endl;
 
+    // set computed parameters
     fx = K_matrix(0,0);
     fy = K_matrix(1,1);
     cx = K_matrix(0, 2);
@@ -219,6 +228,7 @@ bool Calibration::calibration(
                  "\t\tif your calibration is successful or not.\n\n" << std::flush;
     return true;
 }
+
 
 
 
